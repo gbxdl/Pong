@@ -26,9 +26,6 @@ class progress:
         elif ballPosx > self.gs.boardWidth:
             self.gs.gameover = 2
             self.leftCounter+=1
-        if self.gs.gameover > 0:
-            # print('score: left won', self.leftCounter, 'times, right won:', self.rightCounter, 'times')
-            self.gs.startGame()
         
         if self.gs.ballVelocity[1] > 0:
             self.gs.ballVelocity[1] = self.gs.ballVelocity[1]+0.01
@@ -37,11 +34,11 @@ class progress:
     
     def moveBatLeft(self,leftPlayer):
         direction = leftPlayer.makeMove()
-        return self.gs.boardHeight/80*direction + self.gs.batLeftPos[0]
+        return self.gs.batStepSize*direction + self.gs.batLeftPos[0]
             
     def moveBatRight(self,rightPlayer):
         direction = rightPlayer.makeMove()
-        return  self.gs.boardHeight/80*direction + self.gs.batRightPos[0]
+        return  self.gs.batStepSize*direction + self.gs.batRightPos[0]
         
     def moveBall(self,posx,posy,speedx,speedy):
         newPosx = posx + speedx
@@ -54,9 +51,14 @@ class progress:
         if newPosy > self.gs.boardHeight:
             newPosy = self.gs.boardHeight - (newPosy - self.gs.boardHeight)
             newSpeedy = (-1) * speedy
+        
+        leftEdge = self.gs.batThickness + self.gs.ballRadius
+        rightEdge = self.gs.boardWidth - self.gs.batThickness - self.gs.ballRadius
+        if rightEdge >= newPosx >= leftEdge:
+            return [newPosx,newPosy,newSpeedx,newSpeedy]
+        
         lowEdge = self.gs.batLeftPos[0] + self.gs.batLength/2
         highEdge = self.gs.batLeftPos[0] - self.gs.batLength/2
-        leftEdge = self.gs.batThickness + self.gs.ballRadius
         distToCenter = newPosy - self.gs.batLeftPos[0]
         # print(newPosx,'<',leftEdge,'and', lowEdge,'>=',newPosy,'>=',highEdge)
         if newPosx < leftEdge and lowEdge >= newPosy >= highEdge:
@@ -66,7 +68,6 @@ class progress:
             #to do: newSpeedy depends on where on the bat
         lowEdge = self.gs.batRightPos[0] + self.gs.batLength/2
         highEdge = self.gs.batRightPos[0] - self.gs.batLength/2
-        rightEdge = self.gs.boardWidth - self.gs.batThickness - self.gs.ballRadius
         distToCenter = newPosy - self.gs.batRightPos[0]
         
         if newPosx > rightEdge and lowEdge >= newPosy >= highEdge:

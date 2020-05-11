@@ -4,7 +4,14 @@ import random
 from GUI import *
 
 class gameState:
-    def __init__(self):
+    def __init__(self, play = False, showGame = False):
+        self.play = play
+        self.showGame = showGame
+        self.guiOn = False
+        
+        if self.play or self.showGame:
+            self.guiOn = True
+        
         self.boardWidth = 1200
         self.boardHeight = 600
         self.ballRadius = self.boardWidth/240
@@ -12,8 +19,8 @@ class gameState:
         self.batLength = self.boardHeight/6
         self.batLeftPos = [self.boardHeight/2,self.batThickness/2]
         self.batRightPos = [self.boardHeight/2,self.boardWidth-self.batThickness/2]
+        self.batStepSize = self.boardHeight / 60
         self.startGame()
-        self.guiOn = False
         if self.guiOn:
             window = Tk()
             self.gui = GUI(window, self)
