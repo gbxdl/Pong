@@ -5,8 +5,9 @@ import math
 from player import *
 
 class reinforceBot(player):
-    def __init__(self, gameState, whichPlayer, loadTable):
+    def __init__(self, gameState, whichPlayer, loadTable, progress):
         super().__init__(gameState, whichPlayer)
+        self.progress = progress
         self.probRandom = 0.1
         self.learingRate = 0.1
         self.precision = int(self.gs.batLength)
@@ -24,51 +25,58 @@ class reinforceBot(player):
         if random.random() < self.probRandom:
             return 1-math.floor(3*random.random())
         
-        [posBallxDiscrete, posBallyDiscrete] = self.discretizeBallPos(self.gs.ballPos)
-        highestProb = 0
+        ballPosDiscrete = self.discretizeBallPos(self.gs.ballPos)
+        highestProb = -1
+        bestMove = 0
         if self.whichPlayer == 'left':
             oldBatHeight = self.gs.batLeftPos[0]
         else: 
             oldBatHeight = self.gs.batRightPos[0]
-        oldBatHeightDiscrete = self.discritizeBatPos(oldBatHeight)
-        for move in [-1,0,1]:
+        oldBatHeightDiscrete = self.discretizeBatPos(oldBatHeight)
+        for move in [0,-1,1]:
             newBatHeight = self.gs.batStepSize * move + oldBatHeight
-            newBatHeightDiscrete = self.discritizeBatPos(newBatHeight)
-            itemName = str([newBatHeightDiscrete,posBallyDiscrete,posBallxDiscrete])
-            print(self.table[itemName])
-        return 0
+            [newBallPos,speed] = self.progress.moveBall(self.gs.ballPos,self.gs.ballVelocity)
+            newBatHeightDiscrete = self.discretizeBatPos(newBatHeight)
+            newBallPosDiscrete = self.discretizeBallPos(newBallPos)
+            # print(newBallPosDiscrete)
+            itemName = str([newBatHeightDiscrete,newBallPosDiscrete[0],newBallPosDiscrete[1]])
+            # print(self.table[itemName])
+            if self.table[itemName] > highestProb:
+                highestProb = self.table[itemName]
+                print(highestProb)
+                bestMove = move
+                newItemName = itemName
+        oldItemName = str([oldBatHeightDiscrete,ballPosDiscrete[0],ballPosDiscrete[1]])
+        self.updateTable(oldItemName,newItemName)
+        return bestMove
 
-    def discritizeBatPos(self,batHeight):
+    def discretizeBatPos(self,batHeight):
         return math.floor(batHeight * self.verDiscreteBat / self.gs.boardHeight)
         
     def discretizeBallPos(self,ballPos):
         posy = math.floor(ballPos[0] * self.verDiscreteBall / self.gs.boardHeight)
         posx = math.floor(ballPos[1] * self.horDiscreteBall / self.gs.boardWidth)
-        return [posx,posy]
+        if posx < 0:
+            posx = 0
+        if posx > self.horDiscreteBall + 1:
+            posx = self.horDiscreteBall + 1
+        # print(ballPos[1],posx)
+        return [posy,posx]
         
         
-    def updateTable(self,prevState,State): #to do, first see what make move does
-        position[lastMove]=0
-        oldPosString = self.convertPositionToString(position)
-        position[lastMove]=3-self.myColor
-        position[bestMove[0]][bestMove[1]] = self.myColor
-        newPosString = self.convertPositionToString(position)
-        
-        for i,tab in enumerate(self.table):
-            if tab[0] == oldPosString:
-                indexOld = i
-            if tab[0] == newPosString:
-                indexNew = i
-        oldProb = self.table[indexOld][1]
-        newProb = self.table[indexNew][1]
-        self.table[indexOld][1] = oldProb + self.alpha * (newProb - oldProb) 
+    def updateTable(self,oldItemName,newItemName):
+        oldProb = self.table[oldItemName]
+        newProb = self.table[newItemName]
+        # print(oldProb, newProb)
+        self.table[oldItemName] = oldProb + self.learingRate * (newProb - oldProb)
+        # print(self.table[oldItemName])
 
         
     def initTable(self):#start with just pos ball and pos bat y, more info later
         self.table = {}
         for posBaty in range(self.verDiscreteBat):
             for posBally in range(self.verDiscreteBall):
-                for posBallx in range(self.verDiscreteBall + 2): #to include the won and lost positions: posBallx=0,verDiscrete+1 are gameover.
+                for posBallx in range(self.horDiscreteBall + 2): #to include the won and lost positions: posBallx=0,verDiscrete+1 are gameover.
                     outcome = self.checkGameover(posBallx, self.verDiscreteBall)
                     itemName = str([posBaty,posBally,posBallx])
                     if outcome == 'win':

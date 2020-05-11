@@ -1,5 +1,5 @@
 class player:
-    def __init__(self,gameState,whichPlayer='left', loadTable = False):
+    def __init__(self,gameState,whichPlayer='left', loadTable = False, progress = None):
         self.gs = gameState
         self.whichPlayer = whichPlayer
         self.isHuman = False

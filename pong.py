@@ -9,12 +9,15 @@ from human import *
 from basicBot import *
 from reinforceBot import *
 
+
+
 play = False
-train = True # when training the ball velocity is set much higher
-showGame = False
+train = 0# when training the ball velocity is set much higher
+showGame = 1
+test = 0
 
 tic = time.time()
-numberOfGames = 1000
+numberOfGames = 100000
 gameCounter = 0
 
 gameState = gameState(play, showGame)
@@ -27,24 +30,24 @@ if play:
         progress.timeStep(leftPlayer,rightPlayer)
         gameState.gui.update()
 elif train:
-    leftPlayer = reinforceBot(gameState,'left',False)
-    rightPlayer = basicBot(gameState,'right', False)
+    leftPlayer = reinforceBot(gameState,'left',True, progress)
+    rightPlayer = randomBot(gameState,'right', False)
     gameState.ballVelocity[1] *= 50
     while gameState.gameover == 0:
         progress.timeStep(leftPlayer,rightPlayer)
         if gameState.gameover > 0:
-            gameCounter+=1
+            gameCounter += 1
             gameState.startGame()
             gameState.ballVelocity[1] *= 50
         if gameCounter >= numberOfGames:
             break
 elif showGame:
         numberOfGames = 1    
-        leftPlayer = basicBot(gameState,'left',False)
-        rightPlayer = basicBot(gameState,'right', False)
-        gameState.ballVelocity[1] *= 50
+        leftPlayer = reinforceBot(gameState,'left',True, progress)
+        rightPlayer = randomBot(gameState,'right', False)
+        # gameState.ballVelocity[1] *= 50
         while gameState.gameover == 0:
-            time.sleep(.1)
+            # time.sleep(.1)
             progress.timeStep(leftPlayer,rightPlayer)
             gameState.gui.update()
             if gameState.gameover > 0:
@@ -52,11 +55,18 @@ elif showGame:
                 gameState.startGame()
             if gameCounter >= numberOfGames:
                 break
-    # if gameState.guiOn:
-        # gameState.gui.update()
+elif test:
+    numberOfGames = 1000
+    leftPlayer = reinforceBot(gameState,'left',True, progress)
+    rightPlayer = randomBot(gameState,'right', False)
+    for i in range(numberOfGames):
+        while gameState.gameover == 0:
+            progress.timeStep(leftPlayer,rightPlayer)
+        gameState.startGame()
 
 toc = time.time()
 
 print('played', numberOfGames,'games in', toc-tic, 'seconds')
+print('left won', progress.leftCounter, 'out of', numberOfGames)
 
 leftPlayer.saveTable()

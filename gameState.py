@@ -19,7 +19,7 @@ class gameState:
         self.batLength = self.boardHeight/6
         self.batLeftPos = [self.boardHeight/2,self.batThickness/2]
         self.batRightPos = [self.boardHeight/2,self.boardWidth-self.batThickness/2]
-        self.batStepSize = self.boardHeight / 60
+        self.batStepSize = self.batLength/10
         self.startGame()
         if self.guiOn:
             window = Tk()
