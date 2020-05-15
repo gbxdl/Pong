@@ -9,11 +9,9 @@ from human import *
 from basicBot import *
 from reinforceBot import *
 
-
-
-play = False
+play = 1
 train = 0# when training the ball velocity is set much higher
-showGame = 1
+showGame = 0
 test = 0
 
 tic = time.time()
@@ -24,41 +22,48 @@ gameState = gameState(play, showGame)
 progress = progress(gameState)
 
 if play:
-    leftPlayer = human(gameState, 'left')
-    rightPlayer = basicBot(gameState,'right', False)
+    leftPlayer = reinforceBot(gameState, 'left', True, progress)
+    rightPlayer = human(gameState,'right', True, progress)
     while gameState.gameover == 0:
         progress.timeStep(leftPlayer,rightPlayer)
         gameState.gui.update()
+        if gameState.gameover > 0:
+            gameCounter += 1
+            gameState.startGame()
+        if gameCounter >= numberOfGames:
+            break
 elif train:
     leftPlayer = reinforceBot(gameState,'left',True, progress)
     rightPlayer = randomBot(gameState,'right', False)
-    gameState.ballVelocity[1] *= 50
     while gameState.gameover == 0:
         progress.timeStep(leftPlayer,rightPlayer)
         if gameState.gameover > 0:
             gameCounter += 1
             gameState.startGame()
-            gameState.ballVelocity[1] *= 50
+            # gameState.ballVelocity[1] *= 10
+            # gameState.ballVelocity[0] *= 10
+            # gameState.batStepSize *= 10
         if gameCounter >= numberOfGames:
             break
 elif showGame:
-        numberOfGames = 1    
+        numberOfGames = 10  
         leftPlayer = reinforceBot(gameState,'left',True, progress)
-        rightPlayer = randomBot(gameState,'right', False)
+        rightPlayer = basicBot(gameState,'right', True, progress)
         # gameState.ballVelocity[1] *= 50
         while gameState.gameover == 0:
             # time.sleep(.1)
             progress.timeStep(leftPlayer,rightPlayer)
             gameState.gui.update()
             if gameState.gameover > 0:
-                gameCounter+=1
+                gameCounter += 1
                 gameState.startGame()
+                # gameState.ballVelocity[1] *= 50
             if gameCounter >= numberOfGames:
                 break
 elif test:
     numberOfGames = 1000
     leftPlayer = reinforceBot(gameState,'left',True, progress)
-    rightPlayer = randomBot(gameState,'right', False)
+    rightPlayer = basicBot(gameState,'right', False)
     for i in range(numberOfGames):
         while gameState.gameover == 0:
             progress.timeStep(leftPlayer,rightPlayer)
@@ -70,3 +75,4 @@ print('played', numberOfGames,'games in', toc-tic, 'seconds')
 print('left won', progress.leftCounter, 'out of', numberOfGames)
 
 leftPlayer.saveTable()
+rightPlayer.saveTable()

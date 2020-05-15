@@ -1,17 +1,17 @@
 from player import *
 
 class human(player):
-    def __init__(self,gameState,whichPlayer):
-        super().__init__(gameState,whichPlayer)
+    def __init__(self,gameState, whichPlayer = 'left', loadTable = False, progress = None):
+        super().__init__(gameState,whichPlayer, loadTable, progress)
         self.isHuman = True
         
     def makeMove(self,event):
-        if event.char == 'a' :
-            self.gs.batLeftPos[0] = -self.gs.boardHeight/20 + self.gs.batLeftPos[0]
+        humanhelp = 2
+        if event.char == 'a' and self.whichPlayer == 'left':
+            self.gs.batLeftPos[0] = self.progress.moveBatLeft(-1*humanhelp)
         if event.char == 'z' and self.whichPlayer == 'left':
-            self.gs.batLeftPos[0] = self.gs.boardHeight/20 + self.gs.batLeftPos[0]
-        if event.char == chr(39):
-            self.gs.batRightPos[0] = -self.gs.boardHeight/20 + self.gs.batRightPos[0]
-        if event.char == chr(47):
-            self.gs.batRightPos[0] = self.gs.boardHeight/20 + self.gs.batRightPos[0]
-        return
+            self.gs.batLeftPos[0] = self.progress.moveBatLeft(1*humanhelp)
+        if event.char == chr(39) and self.whichPlayer == 'right':
+            self.gs.batRightPos[0] = self.progress.moveBatRight(-1*humanhelp)
+        if event.char == chr(47) and self.whichPlayer == 'right':
+            self.gs.batRightPos[0] = self.progress.moveBatRight(1*humanhelp)

@@ -17,8 +17,6 @@ class gameState:
         self.ballRadius = self.boardWidth/240
         self.batThickness = self.boardWidth/60
         self.batLength = self.boardHeight/6
-        self.batLeftPos = [self.boardHeight/2,self.batThickness/2]
-        self.batRightPos = [self.boardHeight/2,self.boardWidth-self.batThickness/2]
         self.batStepSize = self.batLength/10
         self.startGame()
         if self.guiOn:
@@ -28,7 +26,7 @@ class gameState:
     def startGame(self):
         self.ballPos = [self.boardHeight/2,self.boardWidth/2]
         self.timeStep = 0
-        speedy = 10*(1-2*random.random())
+        speedy = 1*(1-2*random.random())
         randomsign = 0
         if random.random()>.5:
             randomsign = 1
@@ -36,6 +34,7 @@ class gameState:
         self.gameover = False
         self.ballVelocity = [speedy,speedx]
         #later player speed etc.
-    
+        self.batLeftPos = [self.boardHeight/2,self.batThickness/2]
+        self.batRightPos = [self.boardHeight/2,self.boardWidth-self.batThickness/2]
     
     

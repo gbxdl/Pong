@@ -9,9 +9,11 @@ class progress:
             self.gs.gui.boundKeys(leftPlayer,rightPlayer)
         
         if leftPlayer.isHuman == False:
-            self.gs.batLeftPos[0] = self.moveBatLeft(leftPlayer)
+            direction = leftPlayer.makeMove()
+            self.gs.batLeftPos[0] = self.moveBatLeft(direction)
         if rightPlayer.isHuman == False:
-            self.gs.batRightPos[0] = self.moveBatRight(rightPlayer)
+            direction = rightPlayer.makeMove()
+            self.gs.batRightPos[0] = self.moveBatRight(direction)
         
         [self.gs.ballPos,self.gs.ballVelocity]= self.moveBall(self.gs.ballPos,self.gs.ballVelocity)
         
@@ -27,17 +29,17 @@ class progress:
         else:
             self.gs.ballVelocity[1] = self.gs.ballVelocity[1]-0.01  
     
-    def moveBatLeft(self,leftPlayer):
-        direction = leftPlayer.makeMove()
+    def moveBatLeft(self,direction):
         newPos = self.gs.batStepSize * direction + self.gs.batLeftPos[0]
-        if self.gs.batLength/2 <= newPos <= self.gs.boardHeight - self.gs.batLength/2:
+        # if self.gs.batLength/2 <= newPos <= self.gs.boardHeight - self.gs.batLength/2:
+        if 0 <= newPos <= self.gs.boardHeight:
             return newPos
         return self.gs.batLeftPos[0]
             
-    def moveBatRight(self,rightPlayer):
-        direction = rightPlayer.makeMove()
+    def moveBatRight(self,direction):
         newPos = self.gs.batStepSize*direction + self.gs.batRightPos[0]
-        if self.gs.batLength/2 <= newPos <= self.gs.boardHeight - self.gs.batLength/2:
+        # if self.gs.batLength/2 <= newPos <= self.gs.boardHeight - self.gs.batLength/2:
+        if 0 <= newPos <= self.gs.boardHeight:
             return newPos
         return self.gs.batRightPos[0]
         
@@ -69,7 +71,7 @@ class progress:
         if newPosx < leftEdge and lowEdge >= newPosy >= highEdge:
             newPosx = leftEdge + (leftEdge - newPosx)
             newSpeedx = (-1) * newSpeedx
-            newSpeedy = newSpeedy + distToCenter/self.gs.batLength *10
+            newSpeedy = newSpeedy + distToCenter/self.gs.batLength * 10 #give variable a name
             #to do: newSpeedy depends on where on the bat
         lowEdge = self.gs.batRightPos[0] + self.gs.batLength/2
         highEdge = self.gs.batRightPos[0] - self.gs.batLength/2
