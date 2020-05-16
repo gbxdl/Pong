@@ -9,13 +9,13 @@ from human import *
 from basicBot import *
 from reinforceBot import *
 
-play = 1
+play = 0
 train = 0# when training the ball velocity is set much higher
-showGame = 0
+showGame = 1
 test = 0
 
 tic = time.time()
-numberOfGames = 100000
+numberOfGames = 10
 gameCounter = 0
 
 gameState = gameState(play, showGame)
@@ -48,7 +48,7 @@ elif train:
 elif showGame:
         numberOfGames = 10  
         leftPlayer = reinforceBot(gameState,'left',True, progress)
-        rightPlayer = basicBot(gameState,'right', True, progress)
+        rightPlayer = reinforceBot(gameState,'right', True, progress)
         # gameState.ballVelocity[1] *= 50
         while gameState.gameover == 0:
             # time.sleep(.1)

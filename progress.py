@@ -15,7 +15,7 @@ class progress:
             direction = rightPlayer.makeMove()
             self.gs.batRightPos[0] = self.moveBatRight(direction)
         
-        [self.gs.ballPos,self.gs.ballVelocity]= self.moveBall(self.gs.ballPos,self.gs.ballVelocity)
+        [self.gs.ballPos,self.gs.ballVelocity] = self.moveBall(self.gs.ballPos,self.gs.ballVelocity)
         
         if self.gs.ballPos[1] < 0:
             self.gs.gameover = 1
@@ -37,8 +37,7 @@ class progress:
         return self.gs.batLeftPos[0]
             
     def moveBatRight(self,direction):
-        newPos = self.gs.batStepSize*direction + self.gs.batRightPos[0]
-        # if self.gs.batLength/2 <= newPos <= self.gs.boardHeight - self.gs.batLength/2:
+        newPos = self.gs.batStepSize * direction + self.gs.batRightPos[0]
         if 0 <= newPos <= self.gs.boardHeight:
             return newPos
         return self.gs.batRightPos[0]
@@ -72,7 +71,8 @@ class progress:
             newPosx = leftEdge + (leftEdge - newPosx)
             newSpeedx = (-1) * newSpeedx
             newSpeedy = newSpeedy + distToCenter/self.gs.batLength * 10 #give variable a name
-            #to do: newSpeedy depends on where on the bat
+            return [[newPosy,newPosx],[newSpeedy,newSpeedx]]
+            
         lowEdge = self.gs.batRightPos[0] + self.gs.batLength/2
         highEdge = self.gs.batRightPos[0] - self.gs.batLength/2
         distToCenter = newPosy - self.gs.batRightPos[0]

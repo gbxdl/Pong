@@ -10,7 +10,7 @@ from human import *
 from basicBot import *
 from reinforceBot import *
 
-numberOfGames = 100000
+numberOfGames = 10000
 gameCounter = 0
 saveEvery = 1000
 
@@ -23,8 +23,8 @@ partialWinCounter = 0
 gameState = gameState()
 progress = progress(gameState)
 
-leftPlayer = reinforceBot(gameState,'left', True, progress)
-rightPlayer = reinforceBot(gameState,'right', True, progress)
+leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, progress = progress)
+rightPlayer = randomBot(gameState, whichPlayer = 'right', loadTable = False, progress = progress)
 
 tic = time.time()
 tic2 = time.time()
@@ -64,8 +64,9 @@ print('left won', progress.leftCounter, 'out of', numberOfGames)
 leftPlayer.saveTable()
 
 progress.leftCounter = 0
-numberOfGames = 1000
+numberOfGames = 100
 
+leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, progress = progress, greedy = True)
 rightPlayer = randomBot(gameState,'right', False, progress)
 
 for i in range(numberOfGames):
@@ -90,12 +91,10 @@ print('Won', progress.leftCounter, 'out of', numberOfGames)
 plt.figure('overall win rate')
 plt.plot(games[1:], winRate, label='Overall win rate')
 plt.legend(loc="upper left")
-plt.show()
 
 plt.figure('partial win rate')
 plt.plot(games[1:], partialWinRate, label='Win rate of segment')
 plt.legend(loc="upper left")
-plt.show()
 # 
 plt.figure('time')
 plt.plot(games[1:], timeDataPoints, label='Time of segment')

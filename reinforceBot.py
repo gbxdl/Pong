@@ -6,17 +6,26 @@ import time
 from player import *
 
 class reinforceBot(player):
-    def __init__(self, gameState, whichPlayer, loadTable, progress):
+    def __init__(self, gameState, whichPlayer, loadTable, progress, greedy = False):
         super().__init__(gameState, whichPlayer, loadTable, progress)
         self.probRandom = 0.1
+        if greedy:
+            self.probRandom = 0
         self.learingRate = 0.1
-        horPrecision = int(2*self.gs.batLength)
-        verPrecision = int(self.gs.batLength/8)
-        self.verDiscreteBat = int(self.gs.boardHeight / self.gs.batStepSize) + 2#half out of bound each side.
-        self.verDiscreteBall = int(self.gs.boardHeight / verPrecision)
-        self.horDiscreteBall = int(self.gs.boardWidth / horPrecision)
+        self.verDiscreteBat = int(self.gs.boardHeight / self.gs.batStepSize)
+        self.maxVerDiscreteBall = 0
+        for i in range(100):
+            if i == 0:
+                twoPowi = 1
+            else:
+                twoPowi *= 2
+            if twoPowi >= self.gs.boardHeight / self.gs.batStepSize and self.maxVerDiscreteBall == 0:    
+                self.maxVerDiscreteBall = twoPowi
+            if twoPowi >= self.gs.boardWidth / self.gs.batStepSize:
+                self.horDiscreteBall = i
+                break
         self.horDiscreteVelocity = 1
-        self.verDiscreteVelocity = 1
+        self.verDiscreteVelocity = 2
         if whichPlayer == 'left':
             self.fname = 'trainedTableLeft' + '.txt'
         else:
@@ -30,7 +39,6 @@ class reinforceBot(player):
     def makeMove(self):
         if random.random() < self.probRandom:
             return 1-int(3*random.random())
-        
         ballPosDiscrete = self.discretizeBallPos(self.gs.ballPos)
         ballVelocityDescrete = self.discretizeBallVelocity(self.gs.ballVelocity)
         highestProb = -1
@@ -40,15 +48,15 @@ class reinforceBot(player):
         else: 
             oldBatHeight = self.gs.batRightPos[0]
         oldBatHeightDiscrete = self.discretizeBatPos(oldBatHeight)
+        [newBallPos,newBallVelocity] = self.progress.moveBall(self.gs.ballPos,self.gs.ballVelocity)
+        newBallPosDiscrete = self.discretizeBallPos(newBallPos) #happens with the old bat position, if new pull inside loop and give batPos
+        newBallVelocityDiscrete = self.discretizeBallVelocity(newBallVelocity)
         for move in [0,-1,1]:
             if self.whichPlayer == 'left':
                 newBatHeight = self.progress.moveBatLeft(move) 
             else:
                 newBatHeight = self.progress.moveBatRight(move)
-            [newBallPos,newBallVelocity] = self.progress.moveBall(self.gs.ballPos,self.gs.ballVelocity)
             newBatHeightDiscrete = self.discretizeBatPos(newBatHeight)
-            newBallPosDiscrete = self.discretizeBallPos(newBallPos)
-            newBallVelocityDiscrete = self.discretizeBallVelocity(newBallVelocity)
             # print(newBallPosDiscrete)
             itemName = str([newBatHeightDiscrete,newBallPosDiscrete,newBallVelocityDiscrete])
             if self.table[itemName] > highestProb:
@@ -61,24 +69,30 @@ class reinforceBot(player):
         return bestMove
 
     def discretizeBatPos(self,batHeight):
-        return int(batHeight * self.verDiscreteBat / self.gs.boardHeight)
+        return int(self.verDiscreteBat * batHeight / self.gs.boardHeight)
         
     def discretizeBallVelocity(self,velocity):
         newvelocityx = int(math.copysign(1,velocity[1]))
-        # if abs(velocity[0]) < self.gs.batLength:
-        newvelocityy = int(math.copysign(1,velocity[0]))
-        # else:
-        #     newvelocityy = int(math.copysign(2,velocity[0]))
+        if abs(velocity[0]) < self.gs.initSpeed:
+            newvelocityy = int(math.copysign(1,velocity[0]))
+        else:
+            newvelocityy = int(math.copysign(2,velocity[0]))
         return [newvelocityy,newvelocityx]
         
     def discretizeBallPos(self,ballPos):
-        posy = math.floor(ballPos[0] * self.verDiscreteBall / self.gs.boardHeight)
-        posx = math.floor(ballPos[1] * self.horDiscreteBall / self.gs.boardWidth)
-        if posx < -1:
-            posx = -1
-        if posx > self.horDiscreteBall + 1:
-            posx = self.horDiscreteBall + 1
-        return [posy,posx+1]
+        posxDiscreteSmall = ballPos[1] / self.maxVerDiscreteBall
+        if ballPos[1] < 0:
+            return [0,0]
+        elif ballPos[1] > self.gs.boardWidth:
+            return [0,self.horDiscreteBall + 1]
+        else:
+            posx = math.ceil(math.log(posxDiscreteSmall,2))
+            if posx < 1:
+                posx = 1
+        precisiony = self.maxVerDiscreteBall / 2**(posx-1)
+        posy = int(ballPos[0] / (self.gs.boardWidth/precisiony))
+        # print(posy,posx,ballPos,posxDiscreteSmall)
+        return [posy,posx]
         
         
     def updateTable(self,oldItemName,newItemName):
@@ -90,15 +104,24 @@ class reinforceBot(player):
         tic = time.time()
         self.table = {}
         for posBallx in range(self.horDiscreteBall + 2):#to include the won and lost positions: posBallx=0,verDiscrete+1 are gameover.
-            outcome = self.checkGameover(posBallx, self.verDiscreteBall)
+            if posBallx <= 1:
+                twoPowPosBallx = 1
+            else:
+                twoPowPosBallx *= 2
+            outcome = self.checkGameover(posBallx)
             if outcome == 'win':
                 prob = 1
             elif outcome == 'lose':
                 prob = 0
             else:
                 prob = 0.5
-            for posBaty in range(self.verDiscreteBat):
-                for posBally in range(self.verDiscreteBall):
+            if posBallx == 0 or posBallx == self.horDiscreteBall + 1:
+                precisionyDependingOnx = 1
+            else:
+                precisionyDependingOnx = int(self.maxVerDiscreteBall / twoPowPosBallx)
+            # print(posBallx, precisionyDependingOnx)
+            for posBally in range(precisionyDependingOnx):
+                for posBaty in range(self.verDiscreteBat+1):#half out of bound each side.
                     for velocityx in range(-self.horDiscreteVelocity, self.horDiscreteVelocity+1):
                         if velocityx == 0:
                             continue
@@ -111,13 +134,13 @@ class reinforceBot(player):
         self.saveTable()
         print('table init took:', toc-tic, 'seconds')
             
-    def checkGameover(self, posBallx, verDiscreteBall):
+    def checkGameover(self, posBallx):
         if posBallx == 0:
             if self.whichPlayer == 'left':
                 return 'lose'
             if self.whichPlayer == 'right':
                 return 'win'
-        if posBallx == verDiscreteBall + 1:
+        if posBallx == self.horDiscreteBall + 1:
             if self.whichPlayer == 'left':
                 return 'win'
             if self.whichPlayer == 'right':
