@@ -40,15 +40,12 @@ elif train:
         if gameState.gameover > 0:
             gameCounter += 1
             gameState.startGame()
-            # gameState.ballVelocity[1] *= 10
-            # gameState.ballVelocity[0] *= 10
-            # gameState.batStepSize *= 10
         if gameCounter >= numberOfGames:
             break
 elif showGame:
         numberOfGames = 10  
-        leftPlayer = reinforceBot(gameState,'left',True, progress)
-        rightPlayer = reinforceBot(gameState,'right', True, progress)
+        leftPlayer = reinforceBot(gameState,'left',True, greedy = True)
+        rightPlayer = basicBot(gameState,'right', True, greedy = True)
         # gameState.ballVelocity[1] *= 50
         while gameState.gameover == 0:
             # time.sleep(.1)
@@ -62,8 +59,8 @@ elif showGame:
                 break
 elif test:
     numberOfGames = 1000
-    leftPlayer = reinforceBot(gameState,'left',True, progress)
-    rightPlayer = basicBot(gameState,'right', False)
+    leftPlayer = reinforceBot(gameState,'left', True, progress)
+    rightPlayer = reinforceBot(gameState,'right', True, progress)
     for i in range(numberOfGames):
         while gameState.gameover == 0:
             progress.timeStep(leftPlayer,rightPlayer)

@@ -23,8 +23,8 @@ partialWinCounter = 0
 gameState = gameState()
 progress = progress(gameState)
 
-leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, progress = progress)
-rightPlayer = randomBot(gameState, whichPlayer = 'right', loadTable = False, progress = progress)
+leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, greedy = False)
+rightPlayer = basicBot(gameState, whichPlayer = 'right', loadTable = True, greedy = False)
 
 tic = time.time()
 tic2 = time.time()
@@ -64,10 +64,10 @@ print('left won', progress.leftCounter, 'out of', numberOfGames)
 leftPlayer.saveTable()
 
 progress.leftCounter = 0
-numberOfGames = 100
+numberOfGames = 1000
 
-leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, progress = progress, greedy = True)
-rightPlayer = randomBot(gameState,'right', False, progress)
+leftPlayer = reinforceBot(gameState, whichPlayer = 'left', loadTable = True, greedy = True)
+rightPlayer = randomBot(gameState,'right', False)
 
 for i in range(numberOfGames):
     while gameState.gameover == 0:
@@ -78,7 +78,7 @@ print('test: played', numberOfGames,'games against randomBot')
 print('won', progress.leftCounter, 'out of', numberOfGames)
 
 progress.leftCounter = 0
-rightPlayer = basicBot(gameState,'right', False, progress)
+rightPlayer = basicBot(gameState,'right', False)
 
 for i in range(numberOfGames):
     while gameState.gameover == 0:
@@ -100,3 +100,5 @@ plt.figure('time')
 plt.plot(games[1:], timeDataPoints, label='Time of segment')
 plt.legend(loc="upper left")
 plt.show()
+
+print(leftPlayer.speedCounterLow, leftPlayer.speedCounterMiddle,leftPlayer.speedCounterHigh)

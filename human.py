@@ -1,8 +1,8 @@
 from player import *
 
 class human(player):
-    def __init__(self,gameState, whichPlayer = 'left', loadTable = False, progress = None):
-        super().__init__(gameState,whichPlayer, loadTable, progress)
+    def __init__(self,gameState, whichPlayer = 'left', loadTable = False):
+        super().__init__(gameState,whichPlayer, loadTable)
         self.isHuman = True
         
     def makeMove(self,event):

@@ -19,6 +19,9 @@ class gameState:
         self.batLength = self.boardHeight/6
         self.batStepSize = self.batLength/10#power of two
         self.initSpeed = self.boardHeight/60
+        self.batLeftPos = [self.boardHeight/2, self.batThickness/2]
+        self.batRightPos = [self.boardHeight/2, self.boardWidth-self.batThickness/2]
+
         self.startGame()
         
         if self.guiOn:
@@ -36,7 +39,57 @@ class gameState:
         self.gameover = False
         self.ballVelocity = [speedy,speedx]
         #later player speed etc.
-        self.batLeftPos = [self.boardHeight/2, self.batThickness/2]
-        self.batRightPos = [self.boardHeight/2, self.boardWidth-self.batThickness/2]
     
+    def moveBatLeft(self,direction):
+        newPos = self.batStepSize * direction + self.batLeftPos[0]
+        if 0 <= newPos <= self.boardHeight:
+            return newPos
+        return self.batLeftPos[0]
+            
+    def moveBatRight(self,direction):
+        newPos = self.batStepSize * direction + self.batRightPos[0]
+        if 0 <= newPos <= self.boardHeight:
+            return newPos
+        return self.batRightPos[0]
+        
+    def moveBall(self,pos,speed):
+        posx = pos[1]
+        posy = pos[0]
+        speedx = speed[1]
+        speedy = speed[0]
+        newPosx = posx + speedx
+        newPosy = posy + speedy
+        newSpeedx = speedx
+        newSpeedy = speedy
+        if newPosy < 0:
+            newPosy = (-1) * newPosy
+            newSpeedy = (-1) * newSpeedy
+        if newPosy > self.boardHeight:
+            newPosy = self.boardHeight - (newPosy - self.boardHeight)
+            newSpeedy = (-1) * speedy
+        
+        leftEdge = self.batThickness + self.ballRadius
+        rightEdge = self.boardWidth - self.batThickness - self.ballRadius
+        if rightEdge >= newPosx >= leftEdge:
+            return [[newPosy,newPosx],[newSpeedy,newSpeedx]]
+        
+        lowEdge = self.batLeftPos[0] + self.batLength/2
+        highEdge = self.batLeftPos[0] - self.batLength/2
+        distToCenter = newPosy - self.batLeftPos[0]
+        # print(newPosx,'<',leftEdge,'and', lowEdge,'>=',newPosy,'>=',highEdge)
+        if newPosx < leftEdge and lowEdge >= newPosy >= highEdge:
+            newPosx = leftEdge + (leftEdge - newPosx)
+            newSpeedx = (-1) * newSpeedx
+            newSpeedy = newSpeedy + distToCenter/self.batLength * 10 #give variable a name
+            return [[newPosy,newPosx],[newSpeedy,newSpeedx]]
+            
+        lowEdge = self.batRightPos[0] + self.batLength/2
+        highEdge = self.batRightPos[0] - self.batLength/2
+        distToCenter = newPosy - self.batRightPos[0]
+        
+        if newPosx > rightEdge and lowEdge >= newPosy >= highEdge:
+            newPosx = rightEdge + (rightEdge - newPosx)
+            newSpeedx = (-1) * newSpeedx
+            newSpeedy = newSpeedy + distToCenter/self.batLength *10
+        return [[newPosy,newPosx],[newSpeedy,newSpeedx]]
     
